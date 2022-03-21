@@ -4,7 +4,8 @@ exec ros -Q -- $0 "$@"
 |#
 (ql:quickload 'clx :silent t)
 (defpackage :dexter
-  (:use :cl))
+  (:use :cl)
+  (:nicknames :dx))
 (in-package :dexter)
 
 ;; Rather than having an initialize function that applications call, loading dexter does its initialization.
@@ -12,11 +13,6 @@ exec ros -Q -- $0 "$@"
 (defvar *screen* (xlib:display-default-screen *display*))
 (defvar *root* (xlib:screen-root *screen*))
 (defvar *dispatch-alist* nil)
-
-(defun dispatch (&rest event-slots &key display event-key send-event-p &allow-other-keys)
-  (declare (ignore display event-key send-event-p))
-  (format t "<<< ~S~%" (getf event-slots :window))
-  t)
 
 ;;; Some simple structures to keep geometry tidy
 (defstruct rect
@@ -40,7 +36,7 @@ exec ros -Q -- $0 "$@"
          :documentation "A string ID for the responder.")))
 
 ;;; dexter:application
-(defclass appplication (responder) () )
+(defclass application (responder) () )
 
 (defmethod run (application)
   (unwind-protect
@@ -97,8 +93,10 @@ exec ros -Q -- $0 "$@"
                                              :resource-name "Foo"
                                              :resource-class "Foo"
                                              :input :off :initial-state :normal)
-  (xlib:change-property (xwindow toplevel)
-    :WM_PROTOCOLS (list (xlib:intern-atom *display* :WM_DELETE_WINDOW)) :ATOM 32))
+  (xlib:change-property (xwindow toplevel) 
+    :WM_PROTOCOLS (list (xlib:intern-atom *display* :WM_DELETE_WINDOW)
+                        (xlib:intern-atom *display* :WM_TAKE_FOCUS))
+    :ATOM 32))
 
 (defmethod unrealize (toplevel)
   (when (xlib:window-p (xwindow toplevel)) (xlib:destroy-window (xwindow toplevel))))
@@ -120,10 +118,11 @@ exec ros -Q -- $0 "$@"
     (show w1)
     (unwind-protect
       (xlib:event-case (*display* :discard-p t :force-output-p t)
-                       (client-message (format sequence window type data)
-                         (format t "A Client Message! ~S ~S ~S ~S ~S ~%" format sequence window type data))
-                       (otherwise (window)
-                         (format t "A window! ~S~%" window)
-                         nil))
+        (client-message (format sequence window type data)
+          (when (eq type :WM_PROTOCOLS)
+            (cond ((eq (elt data 0) (xlib:intern-atom *display* :WM_DELETE_WINDOW)) (format t "DELETE!~%") t)
+                  ((eq (elt data 0) (xlib:intern-atom *display* :WM_TAKE_FOCUS)) (format t "FOCUS!~%"))
+                  (t (format t "A Client Message! ~S ~S ~S ~S ~S ~%" format sequence window type data)))))
+        (otherwise (event-key window)
+          (format t "A window! ~S   An event! ~S~%" window event-key) nil))
       (xlib:close-display *display*))))
-`  
