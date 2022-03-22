@@ -1,3 +1,5 @@
+;;; A basic app should end up looking something like this.
+
 (ql:quickload 'dexter)
 (defclass folder-app (dexter:application)
   ()
