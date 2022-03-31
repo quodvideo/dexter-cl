@@ -22,99 +22,86 @@ exec ros -Q -- $0 "$@"
   (width 1)
   (height 1))
 
-
 (defstruct requisition
   "Width and height requested by something."
   (width 1)
   (height 1))
 
 (defclass responder ()
-  ((name :accessor name
-         :initarg :name
-         :initform ""
-         :type string
-         :documentation "A string ID for the responder.")))
+  ((id :accessor id
+       :initarg :id
+       :initform ""
+       :type string
+       :documentation "A string ID for the responder.")))
 
-;;; dexter:application
-(defclass application (responder) () )
+(defgeneric focus (window token)
+  (:documentation ""))
 
-(defmethod run (application)
-  (unwind-protect
-    (xlib:event-case (*display* :discard-p t :force-output-p t)
-                     (otherwise (window)
-                       (format t "A window! ~S~%" window)
-                     nil))
-    (xlib:close-display *display*)))
+(defun make-default-window (parent &key (x -1) (y -1) (width 1) (height 1))
+  "Creates a basic X window."
+  (let ((xwin (xlib:create-window :parent parent
+                                  :x x :y y :width width :height height
+                                  :event-mask '(:exposure :button-press))))
+    (xlib:set-wm-properties xwin :input :off :initial-state :normal)
+    (xlib:change-property xwin
+      :WM_PROTOCOLS (list (xlib:intern-atom (xlib:window-display xwin) :WM_DELETE_WINDOW)
+                          (xlib:intern-atom (xlib:window-display xwin) :WM_TAKE_FOCUS))
+      :ATOM 32)
+    xwin))
+      
 
-;;; dexter::widget will be the base class for event handling.
-;;; I may go the NS route and have responders, views, applications, and windows.
-(defclass view (responder)
-  ((xwindow :accessor xwindow
-            :initarg :xwindow
-            :initform nil)
+(defclass window (responder)
+  ((xwin :accessor xwin
+         :initarg :xwin
+         :initform (make-default-window *root*)
+         :type xlib:window
+         :documentation "The X window of the window.")
    (geometry :accessor geometry
              :initarg :geometry
              :initform (make-rect)
              :type rect)
-   (size-request :accessor size-request
-                 :initarg :size-request
-                 :initform (make-requisition)
-                 :type requisition)
-   (label :accessor label
-          :initarg :label
+   (title :accessor title
+          :initarg :title
           :initform ""
           :type string
-          :documentation "Displayed label text.")))
+          :documentation "Main window title")
+   (subtitle :accessor subtitle
+             :initarg :subtitle
+             :initform ""
+             :type string
+             :documentation "Window subtitle")
+   (filename :accessor filename
+             :initarg :filename
+             :initform ""
+             :type string
+             :documentation "The filename represented by this window")
+   (url :accessor url
+        :initarg :url
+        :initform ""
+        :type string
+        :documentation "The URL represented by this window")))
 
-(defgeneric realize (view)
-  (:documentation "Provides an XID for the widget to be drawn on."))
-(defgeneric unrealize (view)
-  (:documentation "Disassociates the XID from the widget."))
-(defgeneric show (view)
-  (:documentation "Sets the widget to be shown when its parent is shown."))
-(defgeneric hide (view)
-  (:documentation "Hides the widget."))
-(defgeneric focus (view token)
-  (:documentation ""))
+; (defmethod initialize-instance :after (window &key)
+;  (when (xlib:window-p (xwin window))
+;    (xlib:set-wm-properties (xwin window) :name (title window)))
+;  (format t "here"))
 
-;;; The toplevel widget is what users recognize as a window.
-(defclass toplevel (view)
-  ())
+(defmethod show (window)
+  ;; this is hideous
+  (setf (xlib:drawable-x (xwin window)) (rect-x (geometry window)))
+  (setf (xlib:drawable-y (xwin window)) (rect-y (geometry window)))
+  (setf (xlib:drawable-width (xwin window)) (rect-width (geometry window)))
+  (setf (xlib:drawable-height (xwin window)) (rect-height (geometry window)))
+  (xlib:set-wm-properties (xwin window) :name (title window))
+  (xlib:map-window (xwin window)))
 
-(defmethod realize (toplevel)
-  (setf (xwindow toplevel) (xlib:create-window :parent *root*
-                                               :x (rect-x (geometry toplevel))
-                                               :y (rect-y (geometry toplevel))
-                                               :width (rect-width (geometry toplevel))
-                                               :height (rect-height (geometry toplevel))
-                                               :event-mask '(:exposure :button-press)))
-  (xlib:set-wm-properties (xwindow toplevel) :name "Foo"
-                                             :icon-name "Foo"
-                                             :resource-name "Foo"
-                                             :resource-class "Foo"
-                                             :input :off :initial-state :normal)
-  (xlib:change-property (xwindow toplevel) 
-    :WM_PROTOCOLS (list (xlib:intern-atom *display* :WM_DELETE_WINDOW)
-                        (xlib:intern-atom *display* :WM_TAKE_FOCUS))
-    :ATOM 32))
-
-(defmethod unrealize (toplevel)
-  (when (xlib:window-p (xwindow toplevel)) (xlib:destroy-window (xwindow toplevel))))
-
-(defmethod show (toplevel)
-  (unless (xlib:window-p (xwindow toplevel)) (realize toplevel))
-  (xlib:map-window (xwindow toplevel)))
-
-(defmethod hide (toplevel)
-  (xlib:unmap-window (xwindow toplevel)))
-
-(defmethod focus (toplevel token)
-  (xlib:set-input-focus (xlib:window-display (xwindow toplevel)) (xwindow toplevel) :parent token))
+(defmethod focus (window token)
+  (xlib:set-input-focus (xlib:window-display (xwin window)) (xwin window) :parent token))
 
 ;;; The rest is just doing stuff for testing.
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (let* ((w1 (make-instance 'toplevel :geometry (make-rect :x 10 :y 10 :width 100 :height 100))))
+  (let* ((w1 (make-instance 'window :title "Bar" :geometry (make-rect :x 100 :y 10 :width 100 :height 100))))
     (show w1)
     (unwind-protect
       (xlib:event-case (*display* :discard-p t :force-output-p t)
