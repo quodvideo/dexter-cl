@@ -3,11 +3,14 @@
 exec ros -Q -- $0 "$@"
 |#
 (ql:quickload 'clx :silent t)
-(defpackage :dexter
-  (:use :cl)
-  (:nicknames :dx))
-(in-package :dexter)
 
+(load "src/dexter.asd")
+(load "src/responder.lisp")
+(load "src/application.lisp")
+(load "src/window.lisp")
+(load "src/view.lisp")
+
+(in-package :dexter)
 ;; Rather than having an initialize function that applications call, loading dexter does its initialization.
 (defvar *display* (xlib:open-default-display))
 (defvar *screen* (xlib:display-default-screen *display*))
@@ -27,89 +30,69 @@ exec ros -Q -- $0 "$@"
   (width 1)
   (height 1))
 
-(defclass responder ()
-  ((id :accessor id
-       :initarg :id
-       :initform ""
-       :type string
-       :documentation "A string ID for the responder.")))
-
-(defgeneric focus (window token)
-  (:documentation ""))
-
-(defun make-default-window (parent &key (x -1) (y -1) (width 1) (height 1))
-  "Creates a basic X window."
-  (let ((xwin (xlib:create-window :parent parent
-                                  :x x :y y :width width :height height
-                                  :event-mask '(:exposure :button-press))))
-    (xlib:set-wm-properties xwin :input :off :initial-state :normal)
-    (xlib:change-property xwin
-      :WM_PROTOCOLS (list (xlib:intern-atom (xlib:window-display xwin) :WM_DELETE_WINDOW)
-                          (xlib:intern-atom (xlib:window-display xwin) :WM_TAKE_FOCUS))
-      :ATOM 32)
-    xwin))
-      
-
-(defclass window (responder)
-  ((xwin :accessor xwin
-         :initarg :xwin
-         :initform (make-default-window *root*)
-         :type xlib:window
-         :documentation "The X window of the window.")
-   (geometry :accessor geometry
-             :initarg :geometry
-             :initform (make-rect)
-             :type rect)
-   (title :accessor title
-          :initarg :title
-          :initform ""
-          :type string
-          :documentation "Main window title")
-   (subtitle :accessor subtitle
-             :initarg :subtitle
-             :initform ""
-             :type string
-             :documentation "Window subtitle")
-   (filename :accessor filename
-             :initarg :filename
-             :initform ""
-             :type string
-             :documentation "The filename represented by this window")
-   (url :accessor url
-        :initarg :url
-        :initform ""
-        :type string
-        :documentation "The URL represented by this window")))
-
-; (defmethod initialize-instance :after (window &key)
-;  (when (xlib:window-p (xwin window))
-;    (xlib:set-wm-properties (xwin window) :name (title window)))
-;  (format t "here"))
-
-(defmethod show (window)
-  ;; this is hideous
-  (setf (xlib:drawable-x (xwin window)) (rect-x (geometry window)))
-  (setf (xlib:drawable-y (xwin window)) (rect-y (geometry window)))
-  (setf (xlib:drawable-width (xwin window)) (rect-width (geometry window)))
-  (setf (xlib:drawable-height (xwin window)) (rect-height (geometry window)))
-  (xlib:set-wm-properties (xwin window) :name (title window))
-  (xlib:map-window (xwin window)))
-
-(defmethod focus (window token)
-  (xlib:set-input-focus (xlib:window-display (xwin window)) (xwin window) :parent token))
-
 ;;; The rest is just doing stuff for testing.
 (defun main (&rest argv)
   (declare (ignorable argv))
   (let* ((w1 (make-instance 'window :title "Bar" :geometry (make-rect :x 100 :y 10 :width 100 :height 100))))
     (show w1)
     (unwind-protect
-      (xlib:event-case (*display* :discard-p t :force-output-p t)
+      (xlib:event-case (*display* :discard-p t)
+        (key-press (display send-event-p code sequence time root window child root-x root-y x y state same-screen-p)
+          (format t "Something? ~S~%" send-event-p)
+          (key-press w1 (make-event :code code :sequence sequence :time time
+                                    :root root :window window :child child
+                                    :root-x root-x :root-y root-y :x x :y y
+                                    :state state :same-screen-p same-screen-p)))
+        (key-release (code sequence time root window child root-x root-y x y state same-screen-p)
+          (key-release w1 (make-event :code code :sequence sequence :time time
+                                      :root root :window window :child child
+                                      :root-x root-x :root-y root-y :x x :y y
+                                      :state state :same-screen-p same-screen-p)))
+        (button-press (event-key code sequence time root window child root-x root-y x y state same-screen-p) ;notice event-key is available
+          (button-press w1 (make-event :code code :sequence sequence :time time
+                                       :root root :window window :child child
+                                       :root-x root-x :root-y root-y :x x :y y
+                                       :state state :same-screen-p same-screen-p)))
+        (button-release (code sequence time root window child root-x root-y x y state same-screen-p)
+          (button-release w1 (make-event :code code :sequence sequence :time time
+                                         :root root :window window :child child
+                                         :root-x root-x :root-y root-y :x x :y y
+                                         :state state :same-screen-p same-screen-p)))
+        (motion-notify (hint-p sequence time root window child root-x root-y x y state same-screen-p))
+        (exposure (sequence window x y width height count))
+        (graphics-exposure (sequence drawable x y width height minor count major))
+        (no-exposure (sequence drawable minor major))
+        ;; The remaining events are handled by the window or the application.
+        (enter-notify (kind sequence time root window child root-x root-y x y state mode focus-p same-screen-p))
+        (leave-notify (kind sequence time root window child root-x root-y x y state mode focus-p same-screen-p))
+        (focus-in (kind sequence window mode))
+        (focus-out (kind sequence window mode))
+        (keymap-notify (keymap))
+        (visibility-notify (sequence window state))
+        (create-notify (sequence parent window x y width height border-width override-redirect-p))
+        (destroy-notify (sequence window))
+        (unmap-notify (sequence window configure-p))
+        (map-notify (sequence window override-redirect-p))
+        (map-request (sequence parent window))
+        (reparent-notify (sequence window parent x y override-redirect-p))
+        (configure-notify (sequence window above-sibling x y width height border-width override-redirect-p)
+          (configure-notify w1 (make-event :sequence sequence :window window :above-sibling above-sibling
+                                           :x x :y y :width width :height height :border-width border-width
+                                           :override-redirect-p override-redirect-p)))
+        (configure-request (stack-mode sequence parent window above-sibling x y width height border-width value-mask))
+        ;(gravity-notify (sequence window x y))
+        ;(resize-request (sequence window width height))
+        ;(circulate-notify (sequence window parent place))
+        ;(circulate-request (sequence window parent place))
+        (property-notify (sequence window event-window atom time state)
+          (property-notify w1 (make-event :sequence sequence :window window :event-window event-window :atom atom :time time :state state)))
+        (selection-clear (sequence time window selection))
+        (selection-request (sequence time window requestor selection target property))
+        (selection-notify (sequence time window selection target property))
+        (colormap-notify (sequence window colormap new-p installed-p))
         (client-message (format sequence window type data)
-          (when (eq type :WM_PROTOCOLS)
-            (cond ((eq (elt data 0) (xlib:intern-atom *display* :WM_DELETE_WINDOW)) (format t "DELETE!~%") t)
-                  ((eq (elt data 0) (xlib:intern-atom *display* :WM_TAKE_FOCUS)) (format t "FOCUS!~%"))
-                  (t (format t "A Client Message! ~S ~S ~S ~S ~S ~%" format sequence window type data)))))
+          (client-message w1 (make-event :format format :sequence sequence :window window :type type :data data)))
+        (mapping-notify (sequence request start count))
         (otherwise (event-key window)
           (format t "A window! ~S   An event! ~S~%" window event-key) nil))
       (xlib:close-display *display*))))
