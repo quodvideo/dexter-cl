@@ -37,8 +37,6 @@
 
 (defclass window (responder)
   ((xwin :accessor xwin
-         :initarg :xwin
-         ;:initform (make-default-window *root*) ; This should be somewhere else.
          :type xlib:window
          :documentation "The X window of the window.")
    (geometry :accessor geometry
@@ -106,6 +104,24 @@
                                                (event-window event)
                                                (event-child event)
                                                (event-state event)))
+
+(defmethod motion-notify (window event) (format t "Motion~%"))
+(defmethod enter-notify (window event) (format t "Enter~%"))
+(defmethod leave-notify (window event) (format t "Leave~%"))
+(defmethod focus-in (window event) (format t "Focus in~%"))
+(defmethod focus-out (window event) (format t "Focus out~%"))
+(defmethod keymap-notify (window event) (format t "Keymap~%"))
+(defmethod exposure (window event) (format t "EXPOSURE~%"))
+(defmethod graphics-exposure (window event) (format t "Graphics EXPOSURE~%"))
+(defmethod no-exposure (window event) (format t "No EXPOSURE~%"))
+(defmethod visibility-notify (window event) (format t "Vis~%"))
+(defmethod create-notify (window event) (format t "Create~%"))
+(defmethod destroy-notify (window event) (format t "Destroy~%"))
+(defmethod unmap-notify (window event) (format t "Unmap~%"))
+(defmethod map-notify (window event) (format t "Map~%"))
+(defmethod map-request (window event) (format t "Map Request~%"))
+(defmethod reparent-notify (window event) (format t "Reparent~%"))
+
 (defmethod configure-notify (window event)
   (format t "Configure ~S ~S ~S ~S ~S ~S ~S ~S~%" (event-window event)
                                                   (event-above-sibling event)
@@ -113,9 +129,17 @@
                                                   (event-width event) (event-height event)
                                                   (event-border-width event)
                                                   (event-override-redirect-p event)))
+
+(defmethod configure-request (window event) (format t "Configure Request~%"))
+
 (defmethod property-notify (window event)
   (when (eq (event-state event) :new-value)
     (format t "Property ~S ~S~%" (event-atom event) (xlib:get-property (event-window event) (event-atom event)))))
+
+(defmethod selection-clear (window event) (format t "Selection Clear~%"))
+(defmethod selection-request (window event) (format t "Selection Request~%"))
+(defmethod selection-notify (window event) (format t "Selection Notify~%"))
+(defmethod colormap-notify (window event) (format t "Colormap~%"))
 
 (defmethod client-message (window event)
   (when (eq (event-type event) :WM_PROTOCOLS)
@@ -132,3 +156,5 @@
                                                                w
                                                                (event-type event)
                                                                (event-data event)))))))
+
+(defmethod mapping-notify (window event) (format t "Mapping~%"))

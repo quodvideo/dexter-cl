@@ -15,9 +15,18 @@ exec ros -Q -- $0 "$@"
 (defvar *display* (xlib:open-default-display))
 (defvar *screen* (xlib:display-default-screen *display*))
 (defvar *root* (xlib:screen-root *screen*))
-(defvar *dispatch-alist* nil)
 
 ;;; Some simple structures to keep geometry tidy
+(defstruct point
+  "A point"
+  (x 0)
+  (y 0))
+
+(defstruct size
+  "A size"
+  (width 1)
+  (height 1))
+
 (defstruct rect
   "A rectangle into which something will be drawn."
   (x 0)
@@ -33,66 +42,8 @@ exec ros -Q -- $0 "$@"
 ;;; The rest is just doing stuff for testing.
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (let* ((w1 (make-instance 'window :title "Bar" :geometry (make-rect :x 100 :y 10 :width 100 :height 100))))
+  (let* ((a1 (make-instance 'application :display *display*))
+         (w1 (make-instance 'window :title "Bar" :geometry (make-rect :x 100 :y 10 :width 100 :height 100))))
+    (setf (windows a1) (append (windows a1) w1))
     (show w1)
-    (unwind-protect
-      (xlib:event-case (*display* :discard-p t)
-        (key-press (display send-event-p code sequence time root window child root-x root-y x y state same-screen-p)
-          (format t "Something? ~S~%" send-event-p)
-          (key-press w1 (make-event :code code :sequence sequence :time time
-                                    :root root :window window :child child
-                                    :root-x root-x :root-y root-y :x x :y y
-                                    :state state :same-screen-p same-screen-p)))
-        (key-release (code sequence time root window child root-x root-y x y state same-screen-p)
-          (key-release w1 (make-event :code code :sequence sequence :time time
-                                      :root root :window window :child child
-                                      :root-x root-x :root-y root-y :x x :y y
-                                      :state state :same-screen-p same-screen-p)))
-        (button-press (event-key code sequence time root window child root-x root-y x y state same-screen-p) ;notice event-key is available
-          (button-press w1 (make-event :code code :sequence sequence :time time
-                                       :root root :window window :child child
-                                       :root-x root-x :root-y root-y :x x :y y
-                                       :state state :same-screen-p same-screen-p)))
-        (button-release (code sequence time root window child root-x root-y x y state same-screen-p)
-          (button-release w1 (make-event :code code :sequence sequence :time time
-                                         :root root :window window :child child
-                                         :root-x root-x :root-y root-y :x x :y y
-                                         :state state :same-screen-p same-screen-p)))
-        (motion-notify (hint-p sequence time root window child root-x root-y x y state same-screen-p))
-        (exposure (sequence window x y width height count))
-        (graphics-exposure (sequence drawable x y width height minor count major))
-        (no-exposure (sequence drawable minor major))
-        ;; The remaining events are handled by the window or the application.
-        (enter-notify (kind sequence time root window child root-x root-y x y state mode focus-p same-screen-p))
-        (leave-notify (kind sequence time root window child root-x root-y x y state mode focus-p same-screen-p))
-        (focus-in (kind sequence window mode))
-        (focus-out (kind sequence window mode))
-        (keymap-notify (keymap))
-        (visibility-notify (sequence window state))
-        (create-notify (sequence parent window x y width height border-width override-redirect-p))
-        (destroy-notify (sequence window))
-        (unmap-notify (sequence window configure-p))
-        (map-notify (sequence window override-redirect-p))
-        (map-request (sequence parent window))
-        (reparent-notify (sequence window parent x y override-redirect-p))
-        (configure-notify (sequence window above-sibling x y width height border-width override-redirect-p)
-          (configure-notify w1 (make-event :sequence sequence :window window :above-sibling above-sibling
-                                           :x x :y y :width width :height height :border-width border-width
-                                           :override-redirect-p override-redirect-p)))
-        (configure-request (stack-mode sequence parent window above-sibling x y width height border-width value-mask))
-        ;(gravity-notify (sequence window x y))
-        ;(resize-request (sequence window width height))
-        ;(circulate-notify (sequence window parent place))
-        ;(circulate-request (sequence window parent place))
-        (property-notify (sequence window event-window atom time state)
-          (property-notify w1 (make-event :sequence sequence :window window :event-window event-window :atom atom :time time :state state)))
-        (selection-clear (sequence time window selection))
-        (selection-request (sequence time window requestor selection target property))
-        (selection-notify (sequence time window selection target property))
-        (colormap-notify (sequence window colormap new-p installed-p))
-        (client-message (format sequence window type data)
-          (client-message w1 (make-event :format format :sequence sequence :window window :type type :data data)))
-        (mapping-notify (sequence request start count))
-        (otherwise (event-key window)
-          (format t "A window! ~S   An event! ~S~%" window event-key) nil))
-      (xlib:close-display *display*))))
+    (run a1)))

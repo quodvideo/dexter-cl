@@ -115,4 +115,8 @@
        :initarg :id
        :initform ""
        :type string
-       :documentation "A string ID for the responder.")))
+       :documentation "A string ID for the responder.")
+   (next :accessor next
+         :initform nil
+         :type responder
+         :documentation "The next responder.")))
