@@ -1,11 +1,8 @@
 ;;; A basic app should end up looking something like this.
 
 (ql:quickload 'dexter)
-(defclass folder-app (dexter:application)
-  ()
-  ;; a place for timeout functions and the main loop.
-  )
-(defclass folder-object ()
+
+(defclass folder-object () ; This shouldn't really be a subclass.
   ()
   ;; a representation of the directory.
   )
@@ -15,7 +12,7 @@
   )
 
 (defun main (directory timestamp &rest argv)
-  (let* ((app (make-instance 'folder-app)
+  (let* ((app (make-instance 'dexter:application)
          (dir (make-instance 'folder-object :directory directory))
          (win (make-instance 'folder-window :app app
                                             :value dir

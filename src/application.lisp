@@ -1,9 +1,9 @@
 (in-package :dexter)
-
+(defvar *dexter-app*)
 ;; dexter:application
 (defclass application (responder)
   ((display :accessor display
-            :initarg :display
+            :initform (xlib:open-default-display)
             :documentation "The X display.")
    (last-timestamp :accessor last-timestamp
                    :initform 0
@@ -13,97 +13,101 @@
             :type list
             :documentation "The dx::windows of this application.")))
 
-(defmethod key-press (application event)
-  (setf (last-timestamp application) (event-time event))
-  (key-press (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod initialize-instance :after ((obj application) &key)
+  (defvar *dexter-app* obj)
+  (format t "Hi!~%"))
+
+(defmethod key-press ((obj application) event)
+  (setf (last-timestamp obj) (event-time event))
+  (key-press (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
   
-(defmethod key-release (application event)
-  (setf (last-timestamp application) (event-time event))
-  (key-release (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod key-release ((obj application) event)
+  (setf (last-timestamp obj) (event-time event))
+  (key-release (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod button-press (application event)
-  (setf (last-timestamp application) (event-time event))
-  (button-press (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod button-press ((obj application) event)
+  (setf (last-timestamp obj) (event-time event))
+  (button-press (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod button-release (application event)
-  (setf (last-timestamp application) (event-time event))
-  (button-release (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod button-release ((obj application) event)
+  (setf (last-timestamp obj) (event-time event))
+  (button-release (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod motion-notify (application event)
-  (motion-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod motion-notify ((obj application) event)
+  (motion-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod exposure (application event)
-  (exposure (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod exposure ((obj application) event)
+  (exposure (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod graphics-exposure (application event)
-  (graphics-exposure (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod graphics-exposure ((obj application) event)
+  (graphics-exposure (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod no-exposure (application event)
-  (no-exposure (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod no-exposure ((obj application) event)
+  (no-exposure (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod enter-notify (application event)
-  (enter-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod enter-notify ((obj application) event)
+  (enter-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod leave-notify (application event)
-  (leave-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod leave-notify ((obj application) event)
+  (leave-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod focus-in (application event)
-  (focus-in (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod focus-in ((obj application) event)
+  (focus-in (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod focus-out (application event)
-  (focus-out (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod focus-out ((obj application) event)
+  (focus-out (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod keymap-notify (application event)
-  (keymap-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod keymap-notify ((obj application) event)
+  (keymap-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod visibility-notify (application event)
-  (visibility-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod visibility-notify ((obj application) event)
+  (visibility-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod create-notify (application event)
-  (create-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod create-notify ((obj application) event)
+  (create-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod destroy-notify (application event)
-  (destroy-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod destroy-notify ((obj application) event)
+  (destroy-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod unmap-notify (application event)
-  (unmap-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod unmap-notify ((obj application) event)
+  (unmap-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod map-notify (application event)
-  (map-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod map-notify ((obj application) event)
+  (map-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod map-request (application event)
-  (map-request (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod map-request ((obj application) event)
+  (map-request (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod reparent-notify (application event)
-  (reparent-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod reparent-notify ((obj application) event)
+  (reparent-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod configure-notify (application event)
-  (configure-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod configure-notify ((obj application) event)
+  (configure-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod configure-request (application event)
-  (configure-request (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod configure-request ((obj application) event)
+  (configure-request (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 ;
-(defmethod property-notify (application event)
-  (setf (last-timestamp application) (event-time event))
-  (property-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod property-notify ((obj application) event)
+  (setf (last-timestamp obj) (event-time event))
+  (property-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod selection-clear (application event)
-  (selection-clear (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod selection-clear ((obj application) event)
+  (selection-clear (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod selection-request (application event)
-  (selection-request (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod selection-request ((obj application) event)
+  (selection-request (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod selection-notify (application event)
-  (selection-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod selection-notify ((obj application) event)
+  (selection-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod colormap-notify (application event)
-  (colormap-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod colormap-notify ((obj application) event)
+  (colormap-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod client-message (application event)
-  (client-message (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod client-message ((obj application) event)
+  (client-message (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
-(defmethod mapping-notify (application event)
-  (mapping-notify (find-if (lambda (x) (eq x (event-window event))) (windows application)) event))
+(defmethod mapping-notify ((obj application) event)
+  (mapping-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
 
 (defmethod run (application)
   (unwind-protect

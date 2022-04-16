@@ -12,3 +12,21 @@
                (:file "application")
                (:file "window")
                (:file "view")))
+
+;;; Some simple structures to keep geometry tidy
+(defstruct point
+  "A point"
+  (x 0)
+  (y 0))
+
+(defstruct size
+  "A size"
+  (width 1)
+  (height 1))
+
+(defstruct rect
+  "A rectangle into which something will be drawn."
+  (x 0)
+  (y 0)
+  (width 1)
+  (height 1))

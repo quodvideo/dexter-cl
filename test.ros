@@ -11,39 +11,13 @@ exec ros -Q -- $0 "$@"
 (load "src/view.lisp")
 
 (in-package :dexter)
-;; Rather than having an initialize function that applications call, loading dexter does its initialization.
-(defvar *display* (xlib:open-default-display))
-(defvar *screen* (xlib:display-default-screen *display*))
-(defvar *root* (xlib:screen-root *screen*))
-
-;;; Some simple structures to keep geometry tidy
-(defstruct point
-  "A point"
-  (x 0)
-  (y 0))
-
-(defstruct size
-  "A size"
-  (width 1)
-  (height 1))
-
-(defstruct rect
-  "A rectangle into which something will be drawn."
-  (x 0)
-  (y 0)
-  (width 1)
-  (height 1))
-
-(defstruct requisition
-  "Width and height requested by something."
-  (width 1)
-  (height 1))
 
 ;;; The rest is just doing stuff for testing.
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (let* ((a1 (make-instance 'application :display *display*))
-         (w1 (make-instance 'window :title "Bar" :geometry (make-rect :x 100 :y 10 :width 100 :height 100))))
-    (setf (windows a1) (append (windows a1) w1))
+  (let* ((a1 (make-instance 'application))
+         (w1 (make-instance 'window :title "Bar" :geometry (make-rect :x 100 :y 10 :width 100 :height 100)))
+         (w2 (make-instance 'window :title "Quux" :geometry (make-rect :x 300 :y 10 :width 100 :height 100))))
     (show w1)
+    (show w2)
     (run a1)))
