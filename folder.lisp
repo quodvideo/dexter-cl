@@ -14,7 +14,5 @@
 (defun main (directory timestamp &rest argv)
   (let* ((app (make-instance 'dexter:application)
          (dir (make-instance 'folder-object :directory directory))
-         (win (make-instance 'folder-window :app app
-                                            :value dir
-                                            :timestamp timestamp))))
+         (win (make-instance 'folder-window :value dir :timestamp timestamp))))
     (dexter:run app)))

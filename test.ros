@@ -4,20 +4,19 @@ exec ros -Q -- $0 "$@"
 |#
 (ql:quickload 'clx :silent t)
 
-(load "src/dexter.asd")
-(load "src/responder.lisp")
-(load "src/application.lisp")
-(load "src/window.lisp")
-(load "src/view.lisp")
+;; I don't have packaging worked out.
 
-(in-package :dexter)
+(setf asdf:*central-registry*
+  (list* (merge-pathnames "src/" (uiop/os:getcwd))
+         asdf:*central-registry*))
 
-;;; The rest is just doing stuff for testing.
+(asdf:operate 'asdf:load-op 'dexter)
+
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (let* ((a1 (make-instance 'application))
-         (w1 (make-instance 'window :title "Bar" :geometry (make-rect :x 100 :y 10 :width 100 :height 100)))
-         (w2 (make-instance 'window :title "Quux" :geometry (make-rect :x 300 :y 10 :width 100 :height 100))))
-    (show w1)
-    (show w2)
-    (run a1)))
+  (let* ((a1 (make-instance 'dx::application))
+         (w1 (make-instance 'dx::window :title "Bar" :geometry (dx::make-rect :x 100 :y 10 :width 100 :height 100)))
+         (w2 (make-instance 'dx::window :title "Quux" :geometry (dx::make-rect :x 300 :y 10 :width 100 :height 100))))
+    (dx::show w1)
+    (dx::show w2)
+    (dx::run a1)))

@@ -49,7 +49,8 @@
   type
   data
   request
-  start)
+  start
+  place)
 
 (defgeneric key-press (responder event) ; code sequence time root window child root-x root-y x y state same-screen-p)
   (:documentation ""))
@@ -95,6 +96,10 @@
   (:documentation ""))
 (defgeneric configure-request (responder event); stack-mode sequence parent window above-sibling x y width height border-width value-mask)
   (:documentation ""))
+;(defgeneric gravity-notify (responder event) (:documentation ""))
+;(defgeneric resize-request (responder event) (:documentation ""))
+;(defgeneric circulate-notify (responder event) (:documentation ""))
+;(defgeneric circulate-request (responder event) (:documentation ""))
 (defgeneric property-notify (responder event); sequence window event-window atom time state)
   (:documentation ""))
 (defgeneric selection-clear (responder event); sequence time window selection)

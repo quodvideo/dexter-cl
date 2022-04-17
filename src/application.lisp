@@ -1,5 +1,6 @@
 (in-package :dexter)
 (defvar *dexter-app*)
+
 ;; dexter:application
 (defclass application (responder)
   ((display :accessor display
@@ -11,7 +12,23 @@
    (windows :accessor windows
             :initform nil
             :type list
-            :documentation "The dx::windows of this application.")))
+            :documentation "The dx::windows of this application.")
+   (current-event :accessor current-event
+                  :type event
+                  :documentation "The current event")
+   (running-p :accessor running-p
+              :type boolean
+              :initform nil
+              :documentation "")
+   (active-p :accessor active-p
+             :type boolean
+             :initform nil
+             :documentation "")
+                  )
+                  )
+
+(defun matching-window (obj event)
+  (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)))
 
 (defmethod initialize-instance :after ((obj application) &key)
   (defvar *dexter-app* obj)
@@ -19,162 +36,148 @@
 
 (defmethod key-press ((obj application) event)
   (setf (last-timestamp obj) (event-time event))
-  (key-press (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (key-press (matching-window obj event) event))
   
 (defmethod key-release ((obj application) event)
   (setf (last-timestamp obj) (event-time event))
-  (key-release (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (key-release (matching-window obj event) event))
 
 (defmethod button-press ((obj application) event)
   (setf (last-timestamp obj) (event-time event))
-  (button-press (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (button-press (matching-window obj event) event))
 
 (defmethod button-release ((obj application) event)
   (setf (last-timestamp obj) (event-time event))
-  (button-release (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (button-release (matching-window obj event) event))
 
 (defmethod motion-notify ((obj application) event)
-  (motion-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (motion-notify (matching-window obj event) event))
 
 (defmethod exposure ((obj application) event)
-  (exposure (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (exposure (matching-window obj event) event))
 
 (defmethod graphics-exposure ((obj application) event)
-  (graphics-exposure (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (graphics-exposure (matching-window obj event) event))
 
 (defmethod no-exposure ((obj application) event)
-  (no-exposure (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (no-exposure (matching-window obj event) event))
 
 (defmethod enter-notify ((obj application) event)
-  (enter-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (enter-notify (matching-window obj event) event))
 
 (defmethod leave-notify ((obj application) event)
-  (leave-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (leave-notify (matching-window obj event) event))
 
 (defmethod focus-in ((obj application) event)
-  (focus-in (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (focus-in (matching-window obj event) event))
 
 (defmethod focus-out ((obj application) event)
-  (focus-out (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (focus-out (matching-window obj event) event))
 
 (defmethod keymap-notify ((obj application) event)
-  (keymap-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (keymap-notify (matching-window obj event) event))
 
 (defmethod visibility-notify ((obj application) event)
-  (visibility-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (visibility-notify (matching-window obj event) event))
 
 (defmethod create-notify ((obj application) event)
-  (create-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (create-notify (matching-window obj event) event))
 
 (defmethod destroy-notify ((obj application) event)
-  (destroy-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (destroy-notify (matching-window obj event) event))
 
 (defmethod unmap-notify ((obj application) event)
-  (unmap-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (unmap-notify (matching-window obj event) event))
 
 (defmethod map-notify ((obj application) event)
-  (map-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (map-notify (matching-window obj event) event))
 
 (defmethod map-request ((obj application) event)
-  (map-request (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (map-request (matching-window obj event) event))
 
 (defmethod reparent-notify ((obj application) event)
-  (reparent-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (reparent-notify (matching-window obj event) event))
 
 (defmethod configure-notify ((obj application) event)
-  (configure-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (configure-notify (matching-window obj event) event))
 
 (defmethod configure-request ((obj application) event)
-  (configure-request (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (configure-request (matching-window obj event) event))
 ;
 (defmethod property-notify ((obj application) event)
   (setf (last-timestamp obj) (event-time event))
-  (property-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (property-notify (matching-window obj event) event))
 
 (defmethod selection-clear ((obj application) event)
-  (selection-clear (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (selection-clear (matching-window obj event) event))
 
 (defmethod selection-request ((obj application) event)
-  (selection-request (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (selection-request (matching-window obj event) event))
 
 (defmethod selection-notify ((obj application) event)
-  (selection-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (selection-notify (matching-window obj event) event))
 
 (defmethod colormap-notify ((obj application) event)
-  (colormap-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (colormap-notify (matching-window obj event) event))
 
 (defmethod client-message ((obj application) event)
-  (client-message (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (client-message (matching-window obj event) event))
 
 (defmethod mapping-notify ((obj application) event)
-  (mapping-notify (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)) event))
+  (mapping-notify (matching-window obj event) event))
+
+(defun dispatch-event (application event)
+  (case (event-event-key event)
+    (:key-press         (key-press application event))
+    (:key-release       (key-release application event))
+    (:button-press      (button-press application event))
+    (:button-release    (button-release application event))
+    (:motion-notify     (motion-notify application event))
+    (:enter-notify      (enter-notify application event))
+    (:leave-notify      (leave-notify application event))
+    (:focus-in          (focus-in application event))
+    (:focus-out         (focus-out application event))
+    (:keymap-notify     (keymap-notify application event))
+    (:exposure          (exposure application event))
+    (:graphics-exposure (graphics-exposure application event))
+    (:no-exposure       (no-exposure application event))
+    (:visibility-notify (visibility-notify application event))
+    (:create-notify     (create-notify application event))
+    (:destroy-notify    (destroy-notify application event))
+    (:unmap-notify      (unmap-notify application event))
+    (:map-notify        (map-notify application event))
+    (:map-request       (map-request application event))
+    (:reparent-notify   (reparent-notify application event))
+    (:configure-notify  (configure-notify application event))
+    (:configure-request (configure-request application event))
+    ;(:gravity-notify    (gravity-notify application event)
+    ;(:resize-request    (resize-request application event)
+    ;(:circulate-notify  (circulate-notify application event)
+    ;(:circulate-request (circulate-request application event)
+    (:property-notify   (property-notify application event))
+    (:selection-clear   (selection-clear application event))
+    (:selection-request (selection-request application event))
+    (:selection-notify  (selection-notify application event))
+    (:colormap-notify   (colormap-notify application event))
+    (:client-message    (client-message application event))
+    (:mapping-notify    (mapping-notify application event))))
+
+(defmethod next-event (application)
+  (xlib:event-case ((display application) :discard-p t :force-output-p t)
+    (t (display event-key event-code send-event-p code sequence time root window child root-x root-y x y state same-screen-p hint-p kind mode focus-p keymap width height count drawable minor major parent border-width override-redirect-p configure-p above-sibling stack-mode value-mask atom event-window selection requestor target property colormap new-p installed-p format type data request start place)
+      (make-event :display display :event-key event-key :event-code event-code :send-event-p send-event-p :code code :sequence sequence :time time
+                  :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :same-screen-p same-screen-p
+                  :hint-p hint-p :kind kind :mode mode :focus-p focus-p :keymap keymap :width width :height height :count count
+                  :drawable drawable :minor minor :major major :parent parent :border-width border-width
+                  :override-redirect-p override-redirect-p :configure-p configure-p :above-sibling above-sibling
+                  :stack-mode stack-mode :value-mask value-mask :atom atom :event-window event-window :selection selection
+                  :requestor requestor :target target :property property :colormap colormap :new-p new-p :installed-p installed-p
+                  :format format :type type :data data :request request :start start :place place))))
 
 (defmethod run (application)
+  (setf (running-p application) t)
   (unwind-protect
-    (xlib:event-case ((display application) :discard-p t :force-output-p t)
-      (key-press (code sequence time root window child root-x root-y x y state same-screen-p)
-        (key-press application (make-event :code code :sequence sequence :time time :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :same-screen-p same-screen-p)))
-      (key-release (code sequence time root window child root-x root-y x y state same-screen-p)
-        (key-release application (make-event :code code :sequence sequence :time time :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :same-screen-p same-screen-p)))
-      (button-press (event-key code sequence time root window child root-x root-y x y state same-screen-p)
-        (button-press application (make-event :code code :sequence sequence :time time :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :same-screen-p same-screen-p)))
-      (button-release (code sequence time root window child root-x root-y x y state same-screen-p)
-        (button-release application (make-event :code code :sequence sequence :time time :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :same-screen-p same-screen-p)))
-      (motion-notify (hint-p sequence time root window child root-x root-y x y state same-screen-p)
-        (motion-notify application (make-event :code code :sequence sequence :time time :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :same-screen-p same-screen-p)))
-      (exposure (sequence window x y width height count)
-        (exposure application (make-event :sequence sequence :window window :x x :y y :width width :height height :count count)))
-      (graphics-exposure (sequence drawable x y width height minor count major)
-        (graphics-exposure application (make-event :sequence sequence :drawable drawable :x x :y y :width width :height height :minor minor :count count :major major)))
-      (no-exposure (sequence drawable minor major)
-        (no-exposure application (make-event :sequence sequence :drawable drawable :minor minor :major major)))
-      ;; The remaining events are handled by the window or the application.
-      (enter-notify (kind sequence time root window child root-x root-y x y state mode focus-p same-screen-p)
-        (enter-notify application (make-event :kind kind :sequence sequence :time time :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :mode mode :focus-p focus-p :same-screen-p same-screen-p)))
-      (leave-notify (kind sequence time root window child root-x root-y x y state mode focus-p same-screen-p)
-        (leave-notify application (make-event :kind kind :sequence sequence :time time :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :mode mode :focus-p focus-p :same-screen-p same-screen-p)))
-      (focus-in (kind sequence window mode)
-        (focus-in application (make-event :kind kind :sequence sequence :window window :mode mode)))
-      (focus-out (kind sequence window mode)
-        (focus-out application (make-event :kind kind :sequence sequence :window window :mode mode)))
-      (keymap-notify (keymap)
-        (keymap-notify application (make-event :keymap keymap)))
-      (visibility-notify (sequence window state)
-        (visibility-notify application (make-event :sequence sequence :window window :state state)))
-      (create-notify (sequence parent window x y width height border-width override-redirect-p)
-        (create-notify application (make-event :sequence sequence :parent parent :window window :x x :y y :width width :height height :border-width border-width :override-redirect-p override-redirect-p)))
-      (destroy-notify (sequence window)
-        (destroy-notify application (make-event :sequence sequence :window window)))
-      (unmap-notify (sequence window configure-p)
-        (unmap-notify application (make-event :sequence sequence :window window :configure-p configure-p)))
-      (map-notify (sequence window override-redirect-p)
-        (map-notify application (make-event :sequence sequence :window window :override-redirect-p override-redirect-p)))
-      (map-request (sequence parent window)
-        (map-request application (make-event :sequence sequence :parent parent :window window)))
-      (reparent-notify (sequence window parent x y override-redirect-p)
-        (reparent-notify application (make-event :sequence sequence :window window :parent parent :x x :y y :override-redirect-p override-redirect-p)))
-      (configure-notify (sequence window above-sibling x y width height border-width override-redirect-p)
-        (configure-notify application (make-event :sequence sequence :window window :above-sibling above-sibling :x x :y y :width width :height height :border-width border-width :override-redirect-p override-redirect-p)))
-      (configure-request (stack-mode sequence parent window above-sibling x y width height border-width value-mask)
-        (configure-request application (make-event :stack-mode stack-mode :sequence sequence :parent parent :window window :above-sibling above-sibling :x x :y y :width width :height height :border-width border-width :value-mask value-mask)))
-      ;(gravity-notify (sequence window x y))
-      ;(resize-request (sequence window width height))
-      ;(circulate-notify (sequence window parent place))
-      ;(circulate-request (sequence window parent place))
-      (property-notify (sequence window event-window atom time state)
-        (property-notify application (make-event :sequence sequence :window window :event-window event-window :atom atom :time time :state state)))
-      (selection-clear (sequence time window selection)
-        (selection-clear application (make-event :sequence sequence :time time :window window :selection selection)))
-      (selection-request (sequence time window requestor selection target property)
-        (selection-request application (make-event :sequence sequence :time time :window window :requestor requestor :selection selection :target target :property property)))
-      (selection-notify (sequence time window selection target property)
-        (selection-notify application (make-event :sequence sequence :time time :window window :selection selection :target target :property property)))
-      (colormap-notify (sequence window colormap new-p installed-p)
-        (colormap-notify application (make-event :sequence sequence :window window :colormap colormap :new-p new-p :installed-p installed-p)))
-      (client-message (format sequence window type data)
-        (client-message application (make-event :format format :sequence sequence :window window :type type :data data)))
-      (mapping-notify (sequence request start count)
-        (mapping-notify application (make-event :sequence sequence :request request :start start :count count)))
-      (otherwise (event-key window)
-        (format t "A window! ~S   An event! ~S~%" window event-key) nil))
-    (xlib:close-display (display application))))
+    (loop while (setf (current-event application) (next-event application)) do
+      (dispatch-event application (current-event application)))
+    (xlib:close-display (display application)))
+  (setf (running-p application) nil))
