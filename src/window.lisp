@@ -42,7 +42,10 @@
         :initarg :url
         :initform ""
         :type string
-        :documentation "The URL represented by this window")))
+        :documentation "The URL represented by this window")
+   (last-timestamp :accessor last-timestamp
+                   :initform 0
+                   :documentation "The last focus-usable timestamp received by this window.")))
 
 (defmethod initialize-instance :after ((obj window) &key)
   (setf (windows *dexter-app*) (append (windows *dexter-app*) (list obj)))
@@ -81,12 +84,14 @@
                                             (event-child event)
                                             (event-state event)))
 (defmethod button-press ((obj window) event)
+  (setf (last-timestamp obj) (event-time event))
   (format t "Button Press: ~S ~S ~S ~S ~S~%" (event-code event)
                                              (event-root event)
                                              (event-window event)
                                              (event-child event)
                                              (event-state event)))
 (defmethod button-release ((obj window) event)
+  (setf (last-timestamp obj) (event-time event))
   (format t "Button Release: ~S ~S ~S ~S ~S~%" (event-code event)
                                                (event-root event)
                                                (event-window event)
@@ -139,13 +144,12 @@
               (format t "DELETE!~%"))
             ((eq m (xlib:intern-atom d :WM_TAKE_FOCUS))
               (format t "FOCUS! ~S~%" ts)
-              (xlib:set-input-focus d w :parent ts)
-              nil)
+              (setf (last-timestamp obj) ts)
+              (focus obj ts))
             (t (format t "A Client Message! ~S ~S ~S ~S ~S ~%" (event-format event)
                                                                (event-sequence event)
                                                                w
                                                                (event-type event)
                                                                (event-data event)))))))
-
 
 (defmethod mapping-notify ((obj window) event) (format t "Mapping~%"))

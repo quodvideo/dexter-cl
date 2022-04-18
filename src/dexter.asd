@@ -1,6 +1,13 @@
 (defpackage :dexter
   (:use :cl)
-  (:nicknames :dx))
+  (:nicknames :dx)
+  (:export responder
+           application dispatch-event next-event run
+           window show focus
+           view
+           point make-point point-x point-y
+           size make-size size-width size-height
+           rect make-rect))
 
 (in-package :dexter)
 

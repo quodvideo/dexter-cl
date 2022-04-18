@@ -1,4 +1,5 @@
 (in-package :dexter)
+
 (defvar *dexter-app*)
 
 ;; dexter:application
@@ -31,15 +32,14 @@
   (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)))
 
 (defmethod initialize-instance :after ((obj application) &key)
-  (defvar *dexter-app* obj)
-  (format t "Hi!~%"))
+  (defvar *dexter-app* obj))
 
 (defmethod key-press ((obj application) event)
-  (setf (last-timestamp obj) (event-time event))
+  ;(setf (last-timestamp obj) (event-time event))
   (key-press (matching-window obj event) event))
   
 (defmethod key-release ((obj application) event)
-  (setf (last-timestamp obj) (event-time event))
+  ;(setf (last-timestamp obj) (event-time event))
   (key-release (matching-window obj event) event))
 
 (defmethod button-press ((obj application) event)
@@ -105,7 +105,7 @@
   (configure-request (matching-window obj event) event))
 ;
 (defmethod property-notify ((obj application) event)
-  (setf (last-timestamp obj) (event-time event))
+  ;(setf (last-timestamp obj) (event-time event))
   (property-notify (matching-window obj event) event))
 
 (defmethod selection-clear ((obj application) event)
@@ -126,7 +126,7 @@
 (defmethod mapping-notify ((obj application) event)
   (mapping-notify (matching-window obj event) event))
 
-(defun dispatch-event (application event)
+(defmethod dispatch-event (application event)
   (case (event-event-key event)
     (:key-press         (key-press application event))
     (:key-release       (key-release application event))
