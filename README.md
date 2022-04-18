@@ -5,7 +5,7 @@ INDEX is the INcompatible Desktop Environment for X.
 
 Dexter is a widget toolkit.
 
---I've barely started writing this. It will probably be similar to OpenStep, but hardly anything is determined. The files in here now are just me getting familiar with CLX, Roswell, asdf, etc.--
+~~I've barely started writing this. It will probably be similar to OpenStep, but hardly anything is determined. The files in here now are just me getting familiar with CLX, Roswell, asdf, etc.~~
 
 Some progress has been made. I'm using Roswell with SBCL on Debian. I'm using OpenStep as a guide, though I'm mostly working from Apple's documenation for AppKit and UIKit.
 
