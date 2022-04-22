@@ -1,3 +1,5 @@
+;;;; Views in the sense of UIKit, so Window is a subclass
+
 (in-package :dexter)
 
 (defclass view (responder)

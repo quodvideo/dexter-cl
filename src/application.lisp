@@ -1,3 +1,5 @@
+;;;; The singleton Application object.
+
 (in-package :dexter)
 
 (defvar *dexter-app*)
@@ -28,8 +30,8 @@
                   )
                   )
 
-(defun matching-window (obj event)
-  (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows obj)))
+(defun matching-window (app event)
+  (find-if (lambda (x) (eq (xwin x) (event-window event))) (windows app)))
 
 (defmethod initialize-instance :after ((obj application) &key)
   (defvar *dexter-app* obj))
@@ -164,15 +166,24 @@
 
 (defmethod next-event (application)
   (xlib:event-case ((display application) :discard-p t :force-output-p t)
-    (t (display event-key event-code send-event-p code sequence time root window child root-x root-y x y state same-screen-p hint-p kind mode focus-p keymap width height count drawable minor major parent border-width override-redirect-p configure-p above-sibling stack-mode value-mask atom event-window selection requestor target property colormap new-p installed-p format type data request start place)
-      (make-event :display display :event-key event-key :event-code event-code :send-event-p send-event-p :code code :sequence sequence :time time
-                  :root root :window window :child child :root-x root-x :root-y root-y :x x :y y :state state :same-screen-p same-screen-p
-                  :hint-p hint-p :kind kind :mode mode :focus-p focus-p :keymap keymap :width width :height height :count count
-                  :drawable drawable :minor minor :major major :parent parent :border-width border-width
-                  :override-redirect-p override-redirect-p :configure-p configure-p :above-sibling above-sibling
-                  :stack-mode stack-mode :value-mask value-mask :atom atom :event-window event-window :selection selection
-                  :requestor requestor :target target :property property :colormap colormap :new-p new-p :installed-p installed-p
-                  :format format :type type :data data :request request :start start :place place))))
+    (t (display event-key event-code send-event-p code sequence time root window child
+                root-x root-y x y state same-screen-p hint-p kind mode focus-p keymap
+                width height count drawable minor major parent border-width override-redirect-p
+                configure-p above-sibling stack-mode value-mask atom event-window selection
+                requestor target property colormap new-p installed-p format type data request
+                start place)
+      (make-event :display display :event-key event-key :event-code event-code
+                  :send-event-p send-event-p :code code :sequence sequence :time time :root root
+                  :window window :child child :root-x root-x :root-y root-y :x x :y y :state state
+                  :same-screen-p same-screen-p :hint-p hint-p :kind kind :mode mode
+                  :focus-p focus-p :keymap keymap :width width :height height :count count
+                  :drawable drawable :minor minor :major major :parent parent
+                  :border-width border-width :override-redirect-p override-redirect-p
+                  :configure-p configure-p :above-sibling above-sibling :stack-mode stack-mode
+                  :value-mask value-mask :atom atom :event-window event-window :selection selection
+                  :requestor requestor :target target :property property :colormap colormap
+                  :new-p new-p :installed-p installed-p :format format :type type :data data
+                  :request request :start start :place place))))
 
 (defmethod run (application)
   (setf (running-p application) t)

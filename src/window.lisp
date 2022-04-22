@@ -1,13 +1,17 @@
+;;;; The basic toplevel window with a frame, titlebar, etc.
+
 (in-package :dexter)
 
 (defun make-default-window (parent &key (x -1) (y -1) (width 1) (height 1))
   "Creates a basic X window."
   (let ((xwin (xlib:create-window :parent parent
                                   :x x :y y :width width :height height
-                                  :event-mask '(:key-press :key-release :button-press :button-release
-                                                :enter-window :leave-window :pointer-motion :button-motion :exposure
-                                                :visibility-change :structure-notify :substructure-notify
-                                                :focus-change :property-change :colormap-change :owner-grab-button))))
+                                  :event-mask '(:key-press :key-release :button-press
+                                                :button-release :enter-window :leave-window
+                                                :pointer-motion :button-motion :exposure
+                                                :visibility-change :structure-notify
+                                                :substructure-notify :focus-change :property-change
+                                                :colormap-change :owner-grab-button))))
     (xlib:set-wm-properties xwin :input :off :initial-state :normal)
     (xlib:change-property xwin
       :WM_PROTOCOLS (list (xlib:intern-atom (xlib:window-display xwin) :WM_DELETE_WINDOW)
@@ -15,14 +19,10 @@
       :ATOM 32)
     xwin))
 
-(defclass window (responder)
+(defclass window (view)
   ((xwin :accessor xwin
          :type xlib:window
          :documentation "The X window of the window.")
-   (geometry :accessor geometry
-             :initarg :geometry
-             :initform (make-rect)
-             :type rect)
    (title :accessor title
           :initarg :title
           :initform ""
@@ -47,12 +47,16 @@
                    :initform 0
                    :documentation "The last focus-usable timestamp received by this window.")))
 
+(defgeneric focus (window token)
+  (:documentation ""))
+(defgeneric show (window)
+  (:documentation ""))
+(defgeneric close-window (window)
+  (:documentation ""))
+
 (defmethod initialize-instance :after ((obj window) &key)
   (setf (windows *dexter-app*) (append (windows *dexter-app*) (list obj)))
   (setf (next obj) *dexter-app*))
-
-(defgeneric focus (window token)
-  (:documentation ""))
 
 (defmethod show (window)
   (let* ((d (display *dexter-app*))
@@ -60,15 +64,18 @@
          (r (xlib:screen-root s)))
     (setf (xwin window) (make-default-window r)))
   (xlib:with-state ((xwin window))
-    (setf (xlib:drawable-x (xwin window)) (rect-x (geometry window)))
-    (setf (xlib:drawable-y (xwin window)) (rect-y (geometry window)))
-    (setf (xlib:drawable-width (xwin window)) (rect-width (geometry window)))
-    (setf (xlib:drawable-height (xwin window)) (rect-height (geometry window)))
+    (setf (xlib:drawable-x (xwin window)) (rect-x (frame window)))
+    (setf (xlib:drawable-y (xwin window)) (rect-y (frame window)))
+    (setf (xlib:drawable-width (xwin window)) (rect-width (frame window)))
+    (setf (xlib:drawable-height (xwin window)) (rect-height (frame window)))
     (xlib:set-wm-properties (xwin window) :name (title window))
     (xlib:map-window (xwin window))))
 
 (defmethod focus (window token)
   (xlib:set-input-focus (xlib:window-display (xwin window)) (xwin window) :parent token))
+
+(defmethod close-window (window)
+  (xlib:destroy-window (xwin window)))
 
 (defmethod key-press ((obj window) event)
   (format t "~S Key Press: ~S ~S ~S ~S ~S~%" (title obj)
@@ -127,7 +134,8 @@
 
 (defmethod property-notify ((obj window) event)
   (when (eq (event-state event) :new-value)
-    (format t "Property ~S ~S~%" (event-atom event) (xlib:get-property (event-window event) (event-atom event)))))
+    (format t "Property ~S ~S~%" (event-atom event)
+                                 (xlib:get-property (event-window event) (event-atom event)))))
 
 (defmethod selection-clear ((obj window) event) (format t "Selection Clear~%"))
 (defmethod selection-request ((obj window) event) (format t "Selection Request~%"))
@@ -141,7 +149,8 @@
            (m (elt (event-data event) 0))
            (ts (elt (event-data event) 1)))
       (cond ((eq m (xlib:intern-atom d :WM_DELETE_WINDOW))
-              (format t "DELETE!~%"))
+              (format t "DELETE!~%")
+              (close-window obj))
             ((eq m (xlib:intern-atom d :WM_TAKE_FOCUS))
               (format t "FOCUS! ~S~%" ts)
               (setf (last-timestamp obj) ts)
