@@ -19,16 +19,16 @@
            :documentation "The window containing the view.")
    (background-color :accessor background-color
                      :documentation "")
-   (hidden-p :accessor hidden-p
-             :initform nil
-             :type boolean
-             :documentation "")
+   (hiddenp :accessor hiddenp
+            :initform nil
+            :type boolean
+            :documentation "")
    (alpha :accessor alpha
           :type float
           :documentation "")
-   (opaque-p :accessor opaque-p
-             :initform nil
-             :type boolean
-             :documentation "")
+   (opaquep :accessor opaquep
+            :initform nil
+            :type boolean
+            :documentation "")
            )
            )

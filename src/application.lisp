@@ -71,9 +71,12 @@
   (leave-notify (matching-window obj event) event))
 
 (defmethod focus-in ((obj application) event)
+  (setf (active-p obj) t)
   (focus-in (matching-window obj event) event))
 
 (defmethod focus-out ((obj application) event)
+  (when (eq :normal (event-mode event))
+    (setf (active-p obj) nil))
   (focus-out (matching-window obj event) event))
 
 (defmethod keymap-notify ((obj application) event)
