@@ -140,10 +140,10 @@
 (box :orient (or "vertical" "horizontal"))
 
 (menu
-  (item :label "_New"   :shortcut "Ctrl+N" :token 1))
-  (item :label "_Open"  :shortcut "Ctrl+O" :token 2))
-  (item :label "_Save"  :shortcut "Ctrl+S" :token 3))
-  (item :label "_Close" :shortcut "Ctrl+W" :token 4)))
+  (item :label "_New"   :shortcut "Ctrl+N" :token 1)
+  (item :label "_Open"  :shortcut "Ctrl+O" :token 2)
+  (item :label "_Save"  :shortcut "Ctrl+S" :token 3)
+  (item :label "_Close" :shortcut "Ctrl+W" :token 4))
 
 (button :label "OK" :tip "tooltip")
 
