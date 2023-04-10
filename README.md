@@ -3,7 +3,7 @@
 
 INDEX is the INcompatible Desktop Environment for X.
 
-Dexter is a widget toolkit.
+Dexter is a widget toolkit, also for X.
 
 Eventually I'll write what's needed to allow declarative GUI programming. Very roughly, a file selector dialog might look something like this:
 
@@ -27,7 +27,7 @@ Not in a declarative fashion though.
 
 I have in mind to do something like implementing Apple's UIKit in Common Lisp. I've always heard praise for how well done OpenStep was, so I figure that's a good guide. I've never used either, so it's taking some time.
 
-
+X11 is the only target environment for now. Dexter will use the "globally active input model" described in the ICCCM. Really, its main purpose is to show how that's supposed to work. A suite of Dexter apps could be used without a window manager and the typical Windows or Mac user would notice nothing amiss. With the right kind of window manager, Dexter apps will be more capable than Windows apps and as capable as Mac apps. Where X apps (and Windows apps) often fall short is in their support for drag and drop. Mac, unlike other click-to-focus environments, lets you drag an item from a background window without raising that window above all the others. Dexter, with the right window manager, will make that possible on X.
 
 
 
